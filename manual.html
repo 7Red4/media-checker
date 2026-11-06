@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>media-checker 使用手冊</title>
+<style>
+  :root {
+    --bg: #f7f7f5; --surface: #ffffff; --text: #1f2328; --muted: #5d636b;
+    --border: #dfe1e4; --accent: #1f6feb; --accent-soft: #e8f0fe; --code-bg: #f0f1f3;
+    --ok: #1a7f37; --warn: #9a6700;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #15171a; --surface: #1d2024; --text: #e6e8eb; --muted: #9aa1a9;
+      --border: #30353b; --accent: #6ea8fe; --accent-soft: #1c2a40; --code-bg: #262a30;
+      --ok: #56d364; --warn: #e3b341;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #15171a; --surface: #1d2024; --text: #e6e8eb; --muted: #9aa1a9;
+    --border: #30353b; --accent: #6ea8fe; --accent-soft: #1c2a40; --code-bg: #262a30;
+    --ok: #56d364; --warn: #e3b341;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.7 system-ui, "Microsoft JhengHei UI", "PingFang TC", sans-serif;
+  }
+  main { max-width: 820px; margin: 0 auto; padding: 48px 16px 80px; }
+  header { margin-bottom: 40px; }
+  header h1 { font-size: 2rem; margin: 0 0 4px; letter-spacing: -0.01em; }
+  header p { margin: 0; color: var(--muted); }
+  nav { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+  nav a {
+    font-size: 0.875rem; padding: 4px 12px; border: 1px solid var(--border);
+    border-radius: 999px; color: var(--text); text-decoration: none; background: var(--surface);
+  }
+  nav a:hover { border-color: var(--accent); color: var(--accent); }
+  h2 { font-size: 1.3rem; margin: 48px 0 12px; padding-top: 8px; border-top: 1px solid var(--border); }
+  h3 { font-size: 1.05rem; margin: 28px 0 8px; }
+  a { color: var(--accent); }
+  code, kbd {
+    font: 0.875em ui-monospace, "Cascadia Code", Consolas, monospace;
+    background: var(--code-bg); padding: 1px 6px; border-radius: 4px;
+  }
+  kbd { border: 1px solid var(--border); border-bottom-width: 2px; }
+  pre {
+    background: var(--code-bg); padding: 14px 16px; border-radius: 8px; overflow-x: auto;
+    font: 0.875rem/1.6 ui-monospace, "Cascadia Code", Consolas, monospace;
+  }
+  pre code { background: none; padding: 0; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: 8px; overflow: hidden; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { font-size: 0.85rem; color: var(--muted); font-weight: 600; background: var(--code-bg); }
+  tr:last-child td { border-bottom: 0; }
+  ol, ul { padding-left: 1.4em; }
+  li { margin: 4px 0; }
+  .note {
+    background: var(--accent-soft); border-left: 3px solid var(--accent);
+    padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0;
+  }
+  .ok { color: var(--ok); font-weight: 600; }
+  .warn { color: var(--warn); font-weight: 600; }
+  footer { margin-top: 64px; color: var(--muted); font-size: 0.85rem; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>media-checker</h1>
+    <p>Chrome 擴充功能（Manifest V3）：在任何網頁上把圖片或影片開進燈箱，自由縮放、拖曳、旋轉。</p>
+    <nav>
+      <a href="#install">安裝</a>
+      <a href="#open">開啟燈箱</a>
+      <a href="#controls">燈箱操作</a>
+      <a href="#copy">複製網址</a>
+      <a href="#detect">能偵測什麼</a>
+      <a href="#fallback">載入失敗時</a>
+      <a href="#limits">已知限制</a>
+      <a href="#privacy">權限與隱私</a>
+      <a href="#dev">開發與測試</a>
+    </nav>
+  </header>
+
+  <section id="install">
+    <h2>安裝</h2>
+    <ol>
+      <li>開啟 <code>chrome://extensions</code>，打開右上角的「開發人員模式」。</li>
+      <li>點「載入未封裝項目」，選擇 <code>media-checker</code> 資料夾。</li>
+      <li>完成。已開啟的分頁會自動生效，不需要重新整理。</li>
+    </ol>
+    <div class="note">要在本機 <code>file://</code> 頁面使用，請到擴充功能的「詳細資料」開啟「允許存取檔案網址」。</div>
+  </section>
+
+  <section id="open">
+    <h2>開啟燈箱</h2>
+    <p>把游標移到圖片或影片上，用以下任一種方式：</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>方式</th><th>說明</th></tr></thead>
+        <tbody>
+          <tr><td>右鍵選單 → <code>media-check</code></td><td>一般用法。</td></tr>
+          <tr><td><kbd>Alt</kbd> + 右鍵</td><td>直接開啟，網站停用右鍵選單時也有效。</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>游標位置找不到媒體時，會顯示「這個位置找不到圖片或影片」。</p>
+  </section>
+
+  <section id="controls">
+    <h2>燈箱操作</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>操作</th><th>效果</th></tr></thead>
+        <tbody>
+          <tr><td>滾輪</td><td>以游標為中心縮放</td></tr>
+          <tr><td>左鍵拖曳</td><td>移動媒體</td></tr>
+          <tr><td>在右下角區塊內滾動滾輪</td><td>旋轉；按住 <kbd>Shift</kbd> 微調</td></tr>
+          <tr><td><kbd>空白鍵</kbd>、點擊影片</td><td>播放／暫停</td></tr>
+          <tr><td><kbd>Esc</kbd></td><td>有縮放、旋轉或移動時先復原；已是原狀時關閉燈箱</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>iframe 裡的媒體會開在整個分頁的燈箱中，不會被限制在 iframe 的小框框裡；原本的影片會先暫停，避免兩份聲音同時播放。</p>
+  </section>
+
+  <section id="copy">
+    <h2>複製目前網址</h2>
+    <p>按 <kbd>Alt</kbd> + <kbd>C</kbd> 會複製目前分頁的網址，成功時顯示「已複製網址連結」。</p>
+    <ul>
+      <li>焦點需要在網頁內容上；焦點在網址列或 Chrome 不允許擴充功能的頁面時不會作用。</li>
+      <li>焦點在 iframe 內時，複製的仍是分頁本身的網址。</li>
+    </ul>
+  </section>
+
+  <section id="detect">
+    <h2>能偵測什麼</h2>
+    <p>media-checker 依游標座標往下找媒體，而不是看滑鼠點到哪個元素，所以被透明遮罩蓋住的圖片也找得到。</p>
+    <h3>元素</h3>
+    <ul>
+      <li><code>img</code>（<code>srcset</code> 取最高解析度、<code>&lt;picture&gt;</code>、lazy-load 的 <code>data-src</code>）</li>
+      <li><code>video</code>、<code>canvas</code>、inline <code>svg</code>、SVG <code>&lt;image&gt;</code>、<code>input[type=image]</code>、<code>object</code>／<code>embed</code></li>
+    </ul>
+    <h3>CSS 圖片</h3>
+    <ul>
+      <li><code>background-image</code>、<code>::before</code>／<code>::after</code>、<code>content: url()</code>、<code>mask-image</code>、<code>border-image</code>、<code>image-set()</code></li>
+    </ul>
+    <h3>難搞的情況</h3>
+    <ul>
+      <li><code>pointer-events: none</code>、透明遮罩、<code>spacer.gif</code> 之類的佔位圖、疊在媒體上的小圖示</li>
+      <li>open 與 closed shadow DOM、<code>visibility: hidden</code>、<code>inert</code></li>
+      <li>同來源與跨來源 iframe，包含 <code>pointer-events: none</code> 的 iframe 與蓋在媒體上的透明 iframe</li>
+    </ul>
+  </section>
+
+  <section id="fallback">
+    <h2>載入失敗時的退回順序</h2>
+    <h3>圖片</h3>
+    <ol>
+      <li>直接載入原網址。</li>
+      <li>由擴充功能背景頁帶著 cookie 重新抓取（處理需要登入或防盜連的圖片）。</li>
+      <li>拷貝頁面上已解碼的畫面。</li>
+    </ol>
+    <h3>影片</h3>
+    <ol>
+      <li>建立新的 video 元素載入。</li>
+      <li>鏡像原影片的畫面（MSE、串流），控制列直接操作原影片。</li>
+      <li>擷取目前畫面的截圖。</li>
+      <li>顯示 poster 圖片。</li>
+    </ol>
+    <p>iframe 內的媒體若在頂層載入不到，改在媒體所在的 iframe 內開啟。</p>
+  </section>
+
+  <section id="limits">
+    <h2>已知限制</h2>
+    <ul>
+      <li><code>chrome://</code> 頁面、線上應用程式商店、內建 PDF 檢視器：Chrome 不允許擴充功能注入。</li>
+      <li>DRM 影片（Widevine 等）無法複製或鏡像，畫面可能全黑。</li>
+      <li>未開啟 <code>preserveDrawingBuffer</code> 的 WebGL canvas，擷取結果可能是空白。</li>
+      <li>canvas 顯示的是開啟當下的靜態畫面。</li>
+      <li>跨來源且被污染（tainted）的 canvas 無法傳到頂層，會在所在的 iframe 內開啟。</li>
+    </ul>
+  </section>
+
+  <section id="privacy">
+    <h2>權限與隱私</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>權限</th><th>用途</th></tr></thead>
+        <tbody>
+          <tr><td><code>contextMenus</code></td><td>右鍵選單的 <code>media-check</code> 項目</td></tr>
+          <tr><td><code>scripting</code></td><td>對安裝前就已開啟的分頁補注入腳本</td></tr>
+          <tr><td><code>&lt;all_urls&gt;</code></td><td>在所有網站與 iframe 中偵測媒體，並在必要時重新抓取圖片</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>擴充功能沒有任何遙測或外部伺服器。唯一的網路請求是「重新抓取圖片」：背景頁會帶著你在該網站的 cookie 去抓<strong>頁面上原本就有的那張圖</strong>，只接受 <code>http(s)</code> 與 <code>image/*</code> 回應、上限 40 MB，結果只在本機燈箱中顯示。</p>
+    <p>跨 frame 的探測訊息使用由背景頁核發、5 秒內有效的一次性憑證，網頁無法偽造。</p>
+  </section>
+
+  <section id="dev">
+    <h2>開發與測試</h2>
+    <h3>檔案結構</h3>
+<pre><code>manifest.json
+background.js        右鍵選單、frame 間訊息轉送、圖片重抓
+content/detect.js    座標 → 媒體
+content/lightbox.js  燈箱 UI 與互動
+content/main.js      事件攔截、跨 frame 探測
+icons/               圖示（SVG 原稿與 PNG）
+test/                手動測試頁</code></pre>
+    <h3>手動測試</h3>
+    <p>跨來源案例需要 HTTP 伺服器，且必須從 <code>localhost</code> 開啟（測試頁會用 <code>127.0.0.1</code> 載入跨來源 iframe）：</p>
+<pre><code>npx http-server test -p 8080</code></pre>
+    <p>接著開啟 <code>http://localhost:8080/index.html</code>，在每個測試案例上用 <kbd>Alt</kbd> + 右鍵試試看。</p>
+    <p>修改程式後，在 <code>chrome://extensions</code> 按擴充功能的重新載入鈕即可，舊腳本會自動卸載，不必重新整理網頁。</p>
+  </section>
+
+  <footer>media-checker 1.1.0 · Chrome Manifest V3</footer>
+</main>
+</body>
+</html>

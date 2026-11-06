@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "media-checker",
+  "version": "1.1.0",
+  "description": "在任何網頁上以燈箱檢視圖片與影片：右鍵選單或 Alt + 右鍵開啟，支援縮放、拖曳、旋轉。另可按 Alt + C 複製目前頁面網址。",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "media-checker：在媒體上按 Alt + 右鍵，或使用右鍵選單 media-check",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": ["contextMenus", "scripting"],
+  "host_permissions": ["<all_urls>"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content/detect.js", "content/lightbox.js", "content/main.js"],
+      "run_at": "document_start",
+      "all_frames": true,
+      "match_origin_as_fallback": true
+    }
+  ]
+}

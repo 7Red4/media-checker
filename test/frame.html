@@ -1,0 +1,8 @@
+<!doctype html>
+<meta charset="utf-8">
+<style>html, body { margin: 0; background: transparent; } img { width: 200px; height: 130px; display: block; }</style>
+<img id="in-frame" src="img/photo.svg?frame" alt="">
+<script>
+  // ?empty：整個 frame 是透明的，用來測試覆蓋在媒體上的 iframe
+  if (location.search === '?empty') document.getElementById('in-frame').remove();
+</script>

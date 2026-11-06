@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>media-checker 測試頁</title>
+<style>
+  body { font: 14px system-ui, "Microsoft JhengHei", sans-serif; margin: 20px; background: #f4f4f6; }
+  h1 { font-size: 18px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, 220px); gap: 16px; }
+  .case { position: relative; background: #fff; padding: 8px; border-radius: 6px; }
+  .case > p { margin: 0 0 6px; font-size: 12px; color: #555; height: 2.6em; }
+  .box { position: relative; width: 200px; height: 130px; overflow: hidden; }
+  .box > img, .box > video, .box > canvas { width: 200px; height: 130px; display: block; }
+  .bg { width: 200px; height: 130px; background: center / cover no-repeat; }
+  .pseudo::before { content: ""; position: absolute; inset: 0; background: url(img/photo.svg) center / cover; }
+  .overlay { position: absolute; inset: 0; }
+  iframe { width: 200px; height: 130px; border: 0; display: block; }
+  .tall { height: 1400px; }
+</style>
+</head>
+<body>
+<h1>media-checker 測試頁：在每張圖上按 Alt + 右鍵或使用右鍵選單</h1>
+<div class="grid" id="cases">
+  <div class="case"><p>一般 img</p><div class="box"><img id="c-img" src="img/photo.svg" alt=""></div></div>
+  <div class="case"><p>img + srcset（應取最高解析度）</p><div class="box"><img id="c-srcset" src="img/photo.svg?small" srcset="img/photo.svg?small 200w, img/photo.svg?big 1600w" sizes="200px" alt=""></div></div>
+  <div class="case"><p>lazy 佔位圖 + data-src</p><div class="box"><img id="c-lazy" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" data-src="img/photo.svg?lazy" alt=""></div></div>
+  <div class="case"><p>div background-image</p><div class="bg" id="c-bg" style="background-image:url(img/photo.svg?bg)"></div></div>
+  <div class="case"><p>::before 偽元素背景</p><div class="box pseudo" id="c-pseudo"></div></div>
+  <div class="case"><p>img 設 pointer-events:none</p><div class="box"><img id="c-pe" src="img/photo.svg?pe" style="pointer-events:none" alt=""></div></div>
+  <div class="case"><p>外層 pointer-events:none 的背景圖</p><div style="pointer-events:none"><div class="bg" id="c-pe-bg" style="background-image:url(img/photo.svg?pebg)"></div></div></div>
+  <div class="case"><p>inline !important pointer-events:none</p><div class="box"><img id="c-pe-imp" src="img/photo.svg?peimp" style="pointer-events:none !important" alt=""></div></div>
+  <div class="case"><p>透明 div 遮罩蓋住 img</p><div class="box"><img id="c-mask" src="img/photo.svg?mask" alt=""><div class="overlay"></div></div></div>
+  <div class="case"><p>spacer.gif 遮罩蓋住背景圖</p><div class="box" id="c-spacer" style="background:url(img/photo.svg?spacer) center/cover"><img class="overlay" src="img/spacer.gif" alt="" style="width:200px;height:130px"></div></div>
+  <div class="case"><p>頁面禁用右鍵（contextmenu preventDefault）</p><div class="box" id="c-blocked"><img src="img/photo.svg?blocked" alt=""></div></div>
+  <div class="case"><p>open shadow DOM</p><div class="box"><x-open id="c-shadow-open"></x-open></div></div>
+  <div class="case"><p>closed shadow DOM + pointer-events:none</p><div class="box"><x-closed id="c-shadow-closed"></x-closed></div></div>
+  <div class="case"><p>canvas</p><div class="box"><canvas id="c-canvas" width="400" height="260"></canvas></div></div>
+  <div class="case"><p>inline SVG</p><div class="box"><svg id="c-svg" viewBox="0 0 100 65" width="200" height="130"><rect width="100" height="65" fill="#264"/><circle cx="50" cy="32" r="20" style="fill:#fc3"/></svg></div></div>
+  <div class="case"><p>video（檔案）</p><div class="box"><video id="c-video" muted loop></video></div></div>
+  <div class="case"><p>video（MSE blob，無法複製）</p><div class="box"><video id="c-mse" muted loop></video></div></div>
+  <div class="case"><p>透明遮罩蓋住 video + 小型 SVG 按鈕</p><div class="box"><video id="c-video2" muted loop></video><div class="overlay"></div><svg id="c-icon" class="overlay" style="inset:45px 80px;width:40px;height:40px" viewBox="0 0 10 10"><path d="M2 1l7 4-7 4z" fill="#fff"/></svg></div></div>
+  <div class="case"><p>同來源 iframe</p><iframe id="c-frame-same" src="frame.html"></iframe></div>
+  <div class="case"><p>跨來源 iframe</p><iframe id="c-frame-cross"></iframe></div>
+  <div class="case"><p>pointer-events:none 的跨來源 iframe</p><iframe id="c-frame-pe" style="pointer-events:none"></iframe></div>
+  <div class="case"><p>跨來源透明 iframe 蓋住 img</p><div class="box"><img id="c-under" src="img/photo.svg?under" alt=""><iframe id="c-frame-over" class="overlay" style="position:absolute"></iframe></div></div>
+  <div class="case"><p>沒有媒體（應出現提示，不開燈箱）</p><div class="box" id="c-none" style="background:#ddd"></div></div>
+</div>
+<div class="tall"></div>
+<script src="page.js"></script>
+</body>
+</html>
